@@ -459,7 +459,12 @@ pre { overflow-x: auto; background: var(--input); border: 1px solid var(--line);
     clearInterval(timer);
     submitting = false;
     $("go").disabled = false;
-    setState("err", "Gagal", ERR[code] || "Terjadi kendala saat memproses permintaan. Coba lagi nanti.", true);
+    // Prefer a safe diagnostic supplied by the backend over a generic message.
+    // This makes API-key, parameter, credit and endpoint errors distinguishable.
+    var detail = typeof msg === "string" ? msg.trim() : "";
+    var friendly = ERR[code] || "Terjadi kendala saat memproses permintaan. Coba lagi nanti.";
+    if (detail && detail !== friendly) friendly += " Detail: " + detail.slice(0, 240);
+    setState("err", "Gagal", friendly, true);
   }
 
   function collectUrls(value, out) {
@@ -632,7 +637,7 @@ pre { overflow-x: auto; background: var(--input); border: 1px solid var(--line);
       if (j.code !== 200) {
         // Tampilkan pesan yang ramah pengguna; jangan bocorkan nama provider,
         // detail mentah dari server, atau kode HTTP internal ke antarmuka.
-        return fail(j.code, "");
+        return fail(j.code, j.detail || j.msg || "");
       }
       keyNote = "Menggunakan rotasi otomatis API key.";
       poll(j.data.taskId);
