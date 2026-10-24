@@ -1,38 +1,22 @@
 # Studio Cover
 
-Website generator musik dengan login per pengguna dan API key yang terpisah untuk setiap akun.
+Studio musik tanpa login. Pengguna memasukkan API key langsung di halaman, atau mengunggah file TXT yang berisi satu atau beberapa key.
 
-## Konfigurasi Vercel
+## API key dan rotasi otomatis
 
-Di **Project → Settings → Environment Variables**, tambahkan:
+- Tempel satu API key, atau beberapa key (satu per baris / dipisahkan koma).
+- Bisa juga pilih file `.txt`. Format yang disarankan: satu API key per baris. Baris kosong dan baris komentar yang dimulai `#` boleh diabaikan.
+- Key disimpan di penyimpanan lokal browser untuk kenyamanan pada perangkat tersebut; gunakan tombol **Hapus key** jika perangkat dipakai bersama.
+- Jika API menolak key karena autentikasi, kredit/saldo, atau rate limit (HTTP/code 401, 402, 403, 429), server mencoba key berikutnya secara berurutan.
+- Key dikirim ke backend hanya untuk memproses permintaan; jangan bagikan link/akses perangkat yang berisi key kepada orang lain.
 
-- `SESSION_SECRET`: string acak panjang dan rahasia untuk tanda tangan sesi.
-- `<NAMA>_USERNAME`: username pengguna.
-- `<NAMA>_PASSWORD`: password pengguna.
-- `<NAMA>_API_KEY_1`, `<NAMA>_API_KEY_2`, dan seterusnya: API key milik pengguna tersebut.
+## Deploy ke Vercel
 
-Contoh dua akun:
-
-```env
-SESSION_SECRET=buat_string_acak_panjang_yang_rahasia
-AISYAH_USERNAME=aisyah
-AISYAH_PASSWORD=ganti_dengan_password_kuat
-AISYAH_API_KEY_1=key_milik_aisyah_1
-AISYAH_API_KEY_2=key_milik_aisyah_2
-BUDI_USERNAME=budi
-BUDI_PASSWORD=ganti_dengan_password_kuat_lain
-BUDI_API_KEY_1=key_milik_budi_1
-BUDI_API_KEY_2=key_milik_budi_2
-```
-
-Nama prefix sebelum `_USERNAME`, `_PASSWORD`, dan `_API_KEY_n` harus sama. Misalnya `SITI_USERNAME` dipasangkan dengan `SITI_PASSWORD` dan `SITI_API_KEY_1`. Pengguna hanya menggunakan key dengan prefix akunnya sendiri. Key dicoba berurutan jika key sebelumnya ditolak, tidak tersedia, atau terkena pembatasan sementara.
-
-Gunakan password yang kuat dan unik; jangan gunakan contoh di atas sebagai password sungguhan. Tandai variabel rahasia sebagai **Sensitive** jika opsi itu tersedia. Setelah mengubah environment variables, lakukan redeploy. Jangan menaruh API key atau password di HTML, repositori, atau file yang dibagikan.
+Deploy folder project ini seperti biasa. Tidak perlu mengatur `SESSION_SECRET`, username, atau password. Pastikan folder `api/` memiliki `create.js` dan `status.js`.
 
 ## Jalankan lokal
 
 - Node.js 18 atau lebih baru.
-- Salin variabel dari `.env.example` ke file `.env` dan isi dengan akun/key sungguhan. Jangan bagikan file `.env`.
 - Jalankan `npm start`, lalu buka `http://localhost:3000`.
 
-Pesan error yang tampil ke pengguna dibuat umum dan tidak menampilkan detail internal layanan. Jika konfigurasi akun atau key bermasalah, periksa log dan Environment Variables dari dashboard administrator.
+API key tidak disimpan di repository. Masukkan lewat UI saat membuka aplikasi.
