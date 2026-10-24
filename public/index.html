@@ -509,7 +509,7 @@ pre { overflow-x: auto; background: var(--input); border: 1px solid var(--line);
 
   var ERR = {
     400: "Parameter tidak valid. Periksa isian form.",
-    401: "Permintaan tidak dapat diproses. Coba lagi nanti.",
+    401: "Akses layanan gagal. Admin perlu memeriksa API key akun atau sesi login.",
     402: "Layanan sedang tidak tersedia. Coba lagi beberapa saat.",
     404: "Sumber tidak ditemukan.",
     422: "Validasi gagal. Periksa link audio dan isian lainnya.",
@@ -671,7 +671,7 @@ pre { overflow-x: auto; background: var(--input); border: 1px solid var(--line);
       stylePrompt: $("stylePrompt").value.trim(),
       instrumental: $("instrumental").checked,
       negativeTags: $("negativeTags").value.trim(),
-      styleWeight: 0.65, weirdnessConstraint: 0.65, audioWeight: 0.65, variety: 1
+      styleWeight: 0.65, weirdnessConstraint: 0.65, audioWeight: 0.65, variety: "normal"
     };
     if (!isKling && !input.instrumental) { input.Lyrics = $("Lyrics").value.trim(); input.vocalGender = $("vocalGender").value; }
     // Generate Music uses Custom Mode: prompt is interpreted as sung lyrics.
