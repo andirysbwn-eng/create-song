@@ -141,12 +141,16 @@ button.go:disabled { opacity: .55; cursor: wait; }
 @keyframes pulse { 50% { opacity: .25; } }
 .msg { color: var(--muted); font-size: 14px; margin: 0 0 14px; }
 .msg.err { color: var(--rec); }
-.track { border: 1px solid var(--line); border-radius: calc(var(--radius) * .6); padding: 12px; margin-bottom: 12px; background: var(--input); }
-.track audio { width: 100%; display: block; margin-bottom: 8px; }
+.track { position:relative; overflow:hidden; border: 1px solid var(--line); border-radius: 20px; padding: 16px; margin-bottom: 14px; background: linear-gradient(145deg, var(--input), color-mix(in srgb, var(--accent) 7%, var(--input))); box-shadow: 0 10px 28px -22px var(--glow); }
+.track-head { display:flex; align-items:center; gap:12px; margin-bottom:12px; }
+.track-art { display:grid; place-items:center; width:54px; height:54px; flex:none; border-radius:15px; color:var(--accent-fg); background:linear-gradient(135deg,var(--accent),var(--accent2)); font-size:25px; box-shadow:0 7px 20px -10px var(--glow); }
+.track-name { font-weight:750; font-size:15px; overflow-wrap:anywhere; }
+.track-sub { color:var(--muted); font-size:12px; margin-top:3px; }
+.track audio { width: 100%; display: block; margin: 10px 0 14px; accent-color:var(--accent); }
 .track a { font: 500 13px var(--f-data); color: var(--accent); }
-.track .cover { display: block; width: 72px; height: 72px; object-fit: cover; border-radius: 8px; margin-bottom: 10px; }
-.acts { display: flex; flex-wrap: wrap; align-items: center; gap: 14px; }
-.acts button { font: 600 13px var(--f-body); padding: 7px 14px; border-radius: 999px; border: 1.5px solid var(--accent); background: transparent; color: var(--accent); cursor: pointer; }
+.track .cover { display: block; width: 72px; height: 72px; object-fit: cover; border-radius: 12px; margin-bottom: 10px; }
+.acts { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.acts button { display:inline-flex; align-items:center; gap:7px; font: 650 13px var(--f-body); padding: 9px 13px; border-radius: 999px; border: 1.5px solid var(--accent); background: transparent; color: var(--accent); cursor: pointer; }
 .acts button:hover:not(:disabled) { background: var(--accent); color: var(--accent-fg); }
 .acts button:disabled { opacity: .55; cursor: wait; }
 pre { overflow-x: auto; background: var(--input); border: 1px solid var(--line); border-radius: 8px; padding: 10px; font: 12px var(--f-data); margin: 10px 0 0; }
@@ -330,6 +334,7 @@ pre { overflow-x: auto; background: var(--input); border: 1px solid var(--line);
 (function () {
   var $ = function (id) { return document.getElementById(id); };
   var timer = null, startedAt = 0;
+  var submitting = false; // Mencegah satu aksi Generate mengirim POST ganda.
   var keyNote = "";
   function headers(json) {
     var h = {};
@@ -402,6 +407,7 @@ pre { overflow-x: auto; background: var(--input); border: 1px solid var(--line);
 
   function fail(code, msg) {
     clearInterval(timer);
+    submitting = false;
     $("go").disabled = false;
     setState("err", "Gagal", (ERR[code] ? ERR[code] + " " : "") + (msg ? "(" + msg + ")" : ""), true);
   }
@@ -428,50 +434,58 @@ pre { overflow-x: auto; background: var(--input); border: 1px solid var(--line);
     finally { btn.disabled = false; btn.textContent = old; }
   }
 
+  async function downloadWav(u, name, btn) {
+    var old = btn.innerHTML; btn.disabled = true; btn.innerHTML = "⏳ Menyiapkan WAV…";
+    try {
+      var r = await fetch(u); if (!r.ok) throw new Error("File audio tidak dapat diakses langsung.");
+      var raw = await r.arrayBuffer();
+      var Ctx = window.AudioContext || window.webkitAudioContext;
+      if (!Ctx) throw new Error("Browser ini belum mendukung konversi WAV.");
+      var ctx = new Ctx(); var audio = await ctx.decodeAudioData(raw.slice(0));
+      var channels = audio.numberOfChannels, frames = audio.length, rate = audio.sampleRate;
+      var bytes = 44 + frames * channels * 2, out = new ArrayBuffer(bytes), view = new DataView(out);
+      function str(off, val) { for (var j=0;j<val.length;j++) view.setUint8(off+j,val.charCodeAt(j)); }
+      str(0,"RIFF"); view.setUint32(4,bytes-8,true); str(8,"WAVE"); str(12,"fmt "); view.setUint32(16,16,true); view.setUint16(20,1,true); view.setUint16(22,channels,true); view.setUint32(24,rate,true); view.setUint32(28,rate*channels*2,true); view.setUint16(32,channels*2,true); view.setUint16(34,16,true); str(36,"data"); view.setUint32(40,bytes-44,true);
+      var data = []; for(var c=0;c<channels;c++) data.push(audio.getChannelData(c));
+      var off=44; for(var i=0;i<frames;i++) for(var c2=0;c2<channels;c2++){ var sample=Math.max(-1,Math.min(1,data[c2][i])); view.setInt16(off,sample<0?sample*32768:sample*32767,true); off+=2; }
+      var blob = new Blob([out],{type:"audio/wav"}), link=document.createElement("a"); link.href=URL.createObjectURL(blob); link.download=name; document.body.appendChild(link); link.click(); link.remove(); setTimeout(function(){URL.revokeObjectURL(link.href);},5000); await ctx.close();
+    } catch(e) { alert("WAV belum bisa dibuat dari link ini. Coba unduh audio asli, atau pastikan server file mengizinkan akses audio."); }
+    finally { btn.disabled=false; btn.innerHTML=old; }
+  }
+
   function showResult(data) {
-    clearInterval(timer);
-    $("go").disabled = false;
-    var parsed = null;
-    try { parsed = JSON.parse(data.resultJson); } catch (e) {}
+    clearInterval(timer); submitting = false; $("go").disabled = false;
+    var parsed = null; try { parsed = JSON.parse(data.resultJson); } catch (e) {}
     var all = parsed ? Array.from(new Set(collectUrls(parsed, []))) : [];
     var isImg = function (u) { return /\.(jpe?g|png|webp|gif)(\?|$)/i.test(u); };
     var urls = all.filter(function (u) { return !isImg(u); });
-    var covers = all.filter(isImg);
-    var base = ($("title").value.trim() || "cover").replace(/[^\w\- ]+/g, "").trim().replace(/\s+/g, "-") || "cover";
+    var covers = all.filter(isImg); var kling = $("workflow").value === "kling";
+    // Generator ini menampilkan maksimal dua hasil (dua variasi lagu).
+    urls = urls.slice(0, 2);
+    var base = ($("title").value.trim() || "musik").replace(/[^\w\- ]+/g, "").trim().replace(/\s+/g, "-") || "musik";
     var box = $("tracks"); box.innerHTML = "";
     urls.forEach(function (u, i) {
       var d = document.createElement("div"); d.className = "track";
-      if (covers[i]) { var im = document.createElement("img"); im.src = covers[i]; im.alt = ""; im.className = "cover"; d.appendChild(im); }
-      var a = document.createElement("audio"); a.controls = true; a.preload = "auto"; a.src = u;
-      var bar = document.createElement("div"); bar.className = "acts";
-      var dl = document.createElement("button"); dl.type = "button"; dl.textContent = "Unduh";
-      var ext = (u.match(/\.(mp3|wav|m4a|aac|ogg)(\?|$)/i) || [0, "mp3"])[1].toLowerCase();
-      dl.addEventListener("click", function () { download(u, base + (urls.length > 1 ? "-" + (i + 1) : "") + "." + ext, dl); });
-      var l = document.createElement("a"); l.href = u; l.target = "_blank"; l.rel = "noopener"; l.textContent = "Buka di tab baru";
-      bar.appendChild(dl); bar.appendChild(l);
-      d.appendChild(a); d.appendChild(bar); box.appendChild(d);
+      if (kling) {
+        var v = document.createElement("video"); v.controls=true; v.playsInline=true; v.preload="metadata"; v.src=u; v.style.width="100%"; v.style.maxHeight="520px"; v.style.borderRadius="12px"; d.appendChild(v);
+        var vb=document.createElement("div"); vb.className="acts"; var vd=document.createElement("button"); vd.type="button"; vd.innerHTML="⬇️ Unduh video"; vd.addEventListener("click",function(){download(u,"video-"+(i+1)+".mp4",vd);}); vb.appendChild(vd); d.appendChild(vb); box.appendChild(d); return;
+      }
+      var head=document.createElement("div"); head.className="track-head";
+      if(covers[i]) { var im=document.createElement("img"); im.src=covers[i]; im.alt="Cover lagu"; im.className="cover"; head.appendChild(im); }
+      else { var art=document.createElement("div"); art.className="track-art"; art.textContent="♫"; head.appendChild(art); }
+      var meta=document.createElement("div"); var title=document.createElement("div"); title.className="track-name"; title.textContent=base.replace(/-/g," ")+(urls.length>1?" · Versi "+(i+1):"");
+      var sub=document.createElement("div"); sub.className="track-sub"; sub.textContent="♫ Audio hasil generate · siap diputar"; meta.appendChild(title); meta.appendChild(sub); head.appendChild(meta); d.appendChild(head);
+      var audio=document.createElement("audio"); audio.controls=true; audio.preload="metadata"; audio.src=u; audio.setAttribute("aria-label","Putar "+title.textContent); d.appendChild(audio);
+      var bar=document.createElement("div"); bar.className="acts";
+      var ext=(u.match(/\.(mp3|wav|m4a|aac|ogg|flac)(\?|$)/i)||[0,"mp3"])[1].toLowerCase();
+      var dl=document.createElement("button"); dl.type="button"; dl.innerHTML="⬇️ Unduh audio ("+ext.toUpperCase()+")"; dl.addEventListener("click",function(){download(u,base+(urls.length>1?"-"+(i+1):"")+"."+ext,dl);}); bar.appendChild(dl);
+      var wav=document.createElement("button"); wav.type="button"; wav.innerHTML="🎚️ Simpan WAV"; wav.addEventListener("click",function(){downloadWav(u,base+(urls.length>1?"-"+(i+1):"")+".wav",wav);}); bar.appendChild(wav);
+      var link=document.createElement("a"); link.href=u; link.target="_blank"; link.rel="noopener"; link.textContent="↗ Buka audio"; bar.appendChild(link);
+      d.appendChild(bar); box.appendChild(d);
     });
-    var kling = $("workflow").value === "kling";
-    if (kling) {
-      box.innerHTML = "";
-      urls.forEach(function (u, i) {
-        var d = document.createElement("div"); d.className = "track";
-        var v = document.createElement("video"); v.controls = true; v.playsInline = true; v.preload = "metadata"; v.src = u; v.style.width = "100%"; v.style.maxHeight = "520px"; v.style.borderRadius = "8px";
-        var bar = document.createElement("div"); bar.className = "acts";
-        var dl = document.createElement("button"); dl.type = "button"; dl.textContent = "Unduh video"; dl.addEventListener("click", function () { download(u, "kling-motion-" + (i + 1) + ".mp4", dl); });
-        var a = document.createElement("a"); a.href = u; a.target = "_blank"; a.rel = "noopener"; a.textContent = "Buka video";
-        bar.appendChild(dl); bar.appendChild(a); d.appendChild(v); d.appendChild(bar); box.appendChild(d);
-      });
-    } else {
-      var firstAudio = box.querySelector("audio");
-      if (firstAudio) { var pr = firstAudio.play(); if (pr && pr.catch) pr.catch(function () {}); }
-    }
-    var sec = data.costTime ? " dalam " + Math.round(data.costTime / 1000) + " detik" : "";
-    setState("ok", "Selesai",
-      urls.length ? (kling ? "Video Motion Control selesai" : "Tugas Suno selesai") + sec + ". " + keyNote + (data.creditsConsumed ? " Kredit terpakai: " + data.creditsConsumed + "." : "") + " Segera unduh hasilnya."
-                  : "Tugas selesai, tetapi tidak ada URL hasil yang dikenali. Lihat respons mentah di bawah.");
-    $("raw").textContent = JSON.stringify(data, null, 2);
-    $("rawBox").hidden = urls.length > 0;
+    var sec=data.costTime?" dalam "+Math.round(data.costTime/1000)+" detik":"";
+    setState("ok","Selesai",urls.length?(kling?"Video selesai":"Berhasil membuat "+urls.length+" hasil audio")+sec+". "+keyNote+(data.creditsConsumed?" Kredit terpakai: "+data.creditsConsumed+".":""):"Tugas selesai, tetapi URL hasil belum ditemukan. Lihat respons mentah di bawah.");
+    $("raw").textContent=JSON.stringify(data,null,2); $("rawBox").hidden=urls.length>0;
   }
 
   function poll(taskId) {
@@ -497,6 +511,7 @@ pre { overflow-x: auto; background: var(--input); border: 1px solid var(--line);
 
   $("form").addEventListener("submit", async function (ev) {
     ev.preventDefault();
+    if (submitting) return;
     clearInterval(timer);
     $("tracks").innerHTML = ""; $("rawBox").hidden = true;
     var workflow = $("workflow").value;
@@ -554,6 +569,7 @@ pre { overflow-x: auto; background: var(--input); border: 1px solid var(--line);
       // Cover/extend endpoints use the style as their generation prompt.
       input.prompt = $("style").value.trim();
     }
+    submitting = true;
     $("go").disabled = true;
     setState("wait", "Mengirim", "Membuat tugas…");
     try {
