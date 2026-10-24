@@ -4,55 +4,24 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Studio Cover</title>
-<script>(function(){var t="";try{t=localStorage.getItem("sc_theme")||""}catch(e){}if(["neon","sunset","terminal","ocean","studio","lapangan","kebun","angkasa"].indexOf(t)<0)t="neon";document.documentElement.setAttribute("data-theme",t)})();</script>
+<script>(function(){var t="";try{t=localStorage.getItem("sc_theme")||""}catch(e){}if(["lapangan","kebun","angkasa"].indexOf(t)<0)t="lapangan";document.documentElement.setAttribute("data-theme",t)})();</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700&family=Instrument+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-/* Tema: semua warna dari token. Default Neon; tema lain lewat data-theme di <html> */
+/* Tema: Lapangan (default), Kebun, Angkasa. Semua warna dari token; pilih lewat data-theme di <html> */
 :root {
-  --bg: #090a1a; --panel: rgba(18,20,46,.62); --input: rgba(5,6,22,.65);
-  --fg: #eaf0ff; --muted: #8f9bc4; --line: rgba(140,160,255,.22);
-  --accent: #00e5ff; --accent2: #ff3df0; --accent-fg: #04101a;
-  --rec: #ff4d6d; --ok: #3dffb0; --glow: rgba(0,229,255,.38);
-  --g1: rgba(0,229,255,.16); --g2: rgba(255,61,240,.16);
+  --bg: #0b3d1e; --panel: rgba(6,44,22,.6); --input: rgba(3,24,12,.7);
+  --fg: #f4fff6; --muted: #a8dbb7; --line: rgba(255,255,255,.2);
+  --accent: #ffd23f; --accent2: #7dff9b; --accent-fg: #0a2e16;
+  --rec: #ff6b6b; --ok: #7dff9b; --glow: rgba(255,210,63,.32);
+  --g1: rgba(255,210,63,.14); --g2: rgba(125,255,155,.12);
+  --pattern: repeating-linear-gradient(90deg, rgba(255,255,255,.035) 0 80px, transparent 80px 160px);
   --radius: 14px; --blur: blur(14px);
   --f-display: "Unbounded", system-ui, sans-serif;
   --f-body: "Instrument Sans", system-ui, sans-serif;
   --f-data: "IBM Plex Mono", ui-monospace, monospace;
   color-scheme: dark;
-}
-:root[data-theme="sunset"] {
-  --bg: #19090f; --panel: rgba(46,17,30,.64); --input: rgba(22,6,12,.62);
-  --fg: #fff0e6; --muted: #d4a39d; --line: rgba(255,150,120,.24);
-  --accent: #ff8a4c; --accent2: #ff3d77; --accent-fg: #210a05;
-  --rec: #ff5470; --ok: #5be3a1; --glow: rgba(255,110,70,.38);
-  --g1: rgba(255,138,76,.17); --g2: rgba(255,61,119,.17);
-}
-:root[data-theme="terminal"] {
-  --bg: #040704; --panel: rgba(7,16,8,.88); --input: rgba(0,8,2,.9);
-  --fg: #c4ffc9; --muted: #62a56a; --line: rgba(57,255,106,.3);
-  --accent: #39ff6a; --accent2: #1fd9a8; --accent-fg: #021005;
-  --rec: #ff5f5f; --ok: #39ff6a; --glow: rgba(57,255,106,.3);
-  --g1: rgba(57,255,106,.08); --g2: rgba(31,217,168,.07);
-  --radius: 2px; --blur: none;
-  --f-display: "IBM Plex Mono", ui-monospace, monospace;
-  --f-body: "IBM Plex Mono", ui-monospace, monospace;
-}
-:root[data-theme="ocean"] {
-  --bg: #04131b; --panel: rgba(8,38,54,.62); --input: rgba(2,16,24,.65);
-  --fg: #e2f6ff; --muted: #84b3c6; --line: rgba(110,200,230,.24);
-  --accent: #3de0cb; --accent2: #4d8bff; --accent-fg: #03191a;
-  --rec: #ff6b81; --ok: #4ee3b5; --glow: rgba(61,224,203,.36);
-  --g1: rgba(61,224,203,.15); --g2: rgba(77,139,255,.17);
-}
-:root[data-theme="studio"] {
-  --bg: #eceef6; --panel: rgba(255,255,255,.78); --input: #ffffff;
-  --fg: #14161f; --muted: #5a6075; --line: #cdd2e0;
-  --accent: #2b55f5; --accent2: #8a3dff; --accent-fg: #ffffff;
-  --rec: #d6303f; --ok: #12805c; --glow: rgba(43,85,245,.28);
-  --g1: rgba(43,85,245,.12); --g2: rgba(138,61,255,.12);
-  color-scheme: light;
 }
 
 :root[data-theme="lapangan"] {
@@ -209,6 +178,32 @@ pre { overflow-x: auto; background: var(--input); border: 1px solid var(--line);
 @media(min-width:720px){.suno-menu{grid-template-columns:repeat(3,minmax(0,1fr))}}
 
 
+/* ===== Pemutar: piringan kaset bulat + tombol play ===== */
+.player { position: relative; width: 170px; height: 170px; margin: 6px auto 14px; }
+.disc { position: absolute; inset: 0; border-radius: 50%; overflow: hidden;
+  background: repeating-radial-gradient(circle, #15161c 0 2px, #2a2d38 3px 4px);
+  box-shadow: 0 14px 36px -12px var(--glow), inset 0 0 0 6px #0c0d12;
+  animation: disc-spin 4s linear infinite; animation-play-state: paused; }
+.track.is-playing .disc { animation-play-state: running; }
+.disc-img { width: 100%; height: 100%; object-fit: cover; display: block; border-radius: 50%; }
+.disc-fallback { width: 100%; height: 100%; display: grid; place-items: center; font-size: 48px; color: var(--accent-fg);
+  background: linear-gradient(135deg, var(--accent), var(--accent2)); border-radius: 50%; }
+.disc-hole { position: absolute; left: 50%; top: 50%; width: 42px; height: 42px; margin: -21px 0 0 -21px; border-radius: 50%;
+  background: var(--bg); box-shadow: 0 0 0 4px rgba(0,0,0,.35) inset; }
+@keyframes disc-spin { to { transform: rotate(360deg); } }
+.play-btn { position: absolute; left: 50%; top: 50%; z-index: 2; transform: translate(-50%, -50%);
+  width: 64px; height: 64px; border-radius: 50%; border: 0; cursor: pointer; display: grid; place-items: center;
+  background: linear-gradient(135deg, var(--accent), var(--accent2)); color: var(--accent-fg);
+  box-shadow: 0 10px 26px -8px var(--glow), 0 0 0 4px color-mix(in srgb, var(--bg) 75%, transparent);
+  transition: transform .15s ease, filter .15s ease; }
+.play-btn svg { width: 26px; height: 26px; fill: currentColor; }
+.play-btn:hover { transform: translate(-50%, -50%) scale(1.07); filter: brightness(1.08); }
+.play-btn:active { transform: translate(-50%, -50%) scale(.95); }
+.play-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+.track-meta { text-align: center; margin-bottom: 8px; }
+.track-meta .track-sub { justify-content: center; }
+.track-meta .track-name { font-size: 16px; }
+
 /* ===== Efek kren: judul berkilau, latar animasi per tema ===== */
 .wrap { position: relative; z-index: 1; }
 .grad { background-size: 200% 100%; animation: shimmer 6s linear infinite; }
@@ -255,7 +250,7 @@ pre { overflow-x: auto; background: var(--input); border: 1px solid var(--line);
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .scene *, .grad, .panel { animation: none !important; transition: none !important; }
+  .scene *, .grad, .panel, .disc { animation: none !important; transition: none !important; }
   .panel:hover { transform: none; }
 }
 </style>
@@ -270,11 +265,6 @@ pre { overflow-x: auto; background: var(--input); border: 1px solid var(--line);
     </div>
     <div style="display:flex;flex-direction:column;align-items:flex-end;gap:10px">
     <div class="themes" id="themes" role="group" aria-label="Tema tampilan">
-      <button type="button" data-t="neon" style="--c1:#00e5ff;--c2:#ff3df0"><i></i>Neon</button>
-      <button type="button" data-t="sunset" style="--c1:#ff8a4c;--c2:#ff3d77"><i></i>Sunset</button>
-      <button type="button" data-t="terminal" style="--c1:#39ff6a;--c2:#1fd9a8"><i></i>Terminal</button>
-      <button type="button" data-t="ocean" style="--c1:#3de0cb;--c2:#4d8bff"><i></i>Ocean</button>
-      <button type="button" data-t="studio" style="--c1:#2b55f5;--c2:#8a3dff"><i></i>Studio</button>
       <button type="button" data-t="lapangan" style="--c1:#ffd23f;--c2:#1f9d55"><i></i>⚽ Lapangan</button>
       <button type="button" data-t="kebun" style="--c1:#2e8b57;--c2:#e9a23b"><i></i>🌿 Kebun</button>
       <button type="button" data-t="angkasa" style="--c1:#a78bfa;--c2:#38e1ff"><i></i>🌌 Angkasa</button>
@@ -537,7 +527,7 @@ pre { overflow-x: auto; background: var(--input); border: 1px solid var(--line);
     clearInterval(timer);
     submitting = false;
     $("go").disabled = false;
-    setState("err", "Gagal", ERR[code] || "Terjadi kendala saat memproses permintaan. Coba lagi nanti.", true);
+    setState("err", "Gagal", msg || ERR[code] || "Terjadi kendala saat memproses permintaan. Coba lagi nanti.", true);
   }
 
   function collectUrls(value, out) {
@@ -581,6 +571,9 @@ pre { overflow-x: auto; background: var(--input); border: 1px solid var(--line);
     finally { btn.disabled=false; btn.innerHTML=old; }
   }
 
+  var PLAY_ICON = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.6v12.8a1 1 0 0 0 1.5.86l10.3-6.4a1 1 0 0 0 0-1.72L9.5 4.74A1 1 0 0 0 8 5.6z"/></svg>';
+  var PAUSE_ICON = '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="5" width="4.2" height="14" rx="1.3"/><rect x="13.8" y="5" width="4.2" height="14" rx="1.3"/></svg>';
+
   function showResult(data) {
     clearInterval(timer); submitting = false; $("go").disabled = false;
     var parsed = null; try { parsed = JSON.parse(data.resultJson); } catch (e) {}
@@ -598,15 +591,29 @@ pre { overflow-x: auto; background: var(--input); border: 1px solid var(--line);
         var v = document.createElement("video"); v.controls=true; v.playsInline=true; v.preload="metadata"; v.src=u; v.style.width="100%"; v.style.maxHeight="520px"; v.style.borderRadius="12px"; d.appendChild(v);
         var vb=document.createElement("div"); vb.className="acts"; var vd=document.createElement("button"); vd.type="button"; vd.innerHTML="⬇️ Unduh video"; vd.addEventListener("click",function(){download(u,"video-"+(i+1)+".mp4",vd);}); vb.appendChild(vd); d.appendChild(vb); box.appendChild(d); return;
       }
-      var head=document.createElement("div"); head.className="track-head";
-      if(covers[i]) { var im=document.createElement("img"); im.src=covers[i]; im.alt="Cover lagu"; im.className="cover"; head.appendChild(im); }
-      else { var art=document.createElement("div"); art.className="track-art"; art.setAttribute("aria-label","Album musik"); art.textContent="♫"; head.appendChild(art); }
-      var meta=document.createElement("div"); var title=document.createElement("div"); title.className="track-name"; title.textContent=base.replace(/-/g," ")+(urls.length>1?" · Versi "+(i+1):"");
-      var sub=document.createElement("div"); sub.className="track-sub"; sub.innerHTML='<span class="eq"><i></i><i></i><i></i></span><span>Audio hasil generate · siap diputar</span>'; meta.appendChild(title); meta.appendChild(sub); head.appendChild(meta); d.appendChild(head);
-      var audio=document.createElement("audio"); audio.controls=true; audio.preload="metadata"; audio.src=u; audio.setAttribute("aria-label","Putar "+title.textContent); d.appendChild(audio);
-      var eq=sub.querySelector(".eq");
-      function syncPlaying(){ var playing=!audio.paused&&!audio.ended; if(art) art.classList.toggle("spinning",playing); if(eq) eq.classList.toggle("active",playing); }
-      audio.addEventListener("play",syncPlaying); audio.addEventListener("pause",syncPlaying); audio.addEventListener("ended",syncPlaying); audio.addEventListener("waiting",syncPlaying);
+      var name = base.replace(/-/g, " ") + (urls.length > 1 ? " · Versi " + (i + 1) : "");
+      var player = document.createElement("div"); player.className = "player";
+      var disc = document.createElement("div"); disc.className = "disc";
+      if (covers[i]) { var im = document.createElement("img"); im.src = covers[i]; im.alt = "Cover lagu"; im.className = "disc-img"; disc.appendChild(im); }
+      else { var fb = document.createElement("div"); fb.className = "disc-fallback"; fb.textContent = "♫"; disc.appendChild(fb); }
+      var hole = document.createElement("span"); hole.className = "disc-hole"; disc.appendChild(hole);
+      var pb = document.createElement("button"); pb.type = "button"; pb.className = "play-btn"; pb.setAttribute("aria-label", "Putar"); pb.innerHTML = PLAY_ICON;
+      player.appendChild(disc); player.appendChild(pb); d.appendChild(player);
+      var meta = document.createElement("div"); meta.className = "track-meta";
+      var title = document.createElement("div"); title.className = "track-name"; title.textContent = name;
+      var sub = document.createElement("div"); sub.className = "track-sub"; sub.innerHTML = '<span class="eq"><i></i><i></i><i></i></span><span>Audio hasil generate · siap diputar</span>';
+      meta.appendChild(title); meta.appendChild(sub); d.appendChild(meta);
+      var audio = document.createElement("audio"); audio.controls = true; audio.preload = "metadata"; audio.src = u; audio.setAttribute("aria-label", "Putar " + name); d.appendChild(audio);
+      var eq = sub.querySelector(".eq");
+      function syncPlaying() {
+        var playing = !audio.paused && !audio.ended;
+        d.classList.toggle("is-playing", playing);
+        pb.innerHTML = playing ? PAUSE_ICON : PLAY_ICON;
+        pb.setAttribute("aria-label", playing ? "Jeda" : "Putar");
+        if (eq) eq.classList.toggle("active", playing);
+      }
+      pb.addEventListener("click", function () { if (audio.paused) audio.play().catch(function () {}); else audio.pause(); });
+      audio.addEventListener("play", syncPlaying); audio.addEventListener("pause", syncPlaying); audio.addEventListener("ended", syncPlaying); audio.addEventListener("waiting", syncPlaying);
       var bar=document.createElement("div"); bar.className="acts";
       var ext=(u.match(/\.(mp3|wav|m4a|aac|ogg|flac)(\?|$)/i)||[0,"mp3"])[1].toLowerCase();
       var dl=document.createElement("button"); dl.type="button"; dl.innerHTML="⬇️ Unduh audio ("+ext.toUpperCase()+")"; dl.addEventListener("click",function(){download(u,base+(urls.length>1?"-"+(i+1):"")+"."+ext,dl);}); bar.appendChild(dl);
@@ -714,9 +721,8 @@ pre { overflow-x: auto; background: var(--input); border: 1px solid var(--line);
       var r = await fetch("/api/create", { method: "POST", headers: headers(true), body: JSON.stringify({ workflow: workflow, input: input, apiKeys: apiKeys }) });
       var j = await r.json();
       if (j.code !== 200) {
-        // Tampilkan pesan yang ramah pengguna; jangan bocorkan nama provider,
-        // detail mentah dari server, atau kode HTTP internal ke antarmuka.
-        return fail(j.code, "");
+        // Pesan dari server sudah aman (tanpa nama provider atau detail mentah).
+        return fail(j.code, j.msg || "");
       }
       keyNote = "Menggunakan rotasi otomatis API key.";
       poll(j.data.taskId);
