@@ -1,3 +1,0 @@
-# Server lokal saja. Satu key per baris; jangan unggah key asli ke Git.
-# API_KEY_1=ISI_API_KEY_PERTAMA
-# API_KEY_2=ISI_API_KEY_KEDUA
