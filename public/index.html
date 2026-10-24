@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Studio Cover</title>
-<script>(function(){var t="";try{t=localStorage.getItem("sc_theme")||""}catch(e){}if(["neon","sunset","terminal","ocean","studio"].indexOf(t)<0)t="neon";document.documentElement.setAttribute("data-theme",t)})();</script>
+<script>(function(){var t="";try{t=localStorage.getItem("sc_theme")||""}catch(e){}if(["neon","sunset","terminal","ocean","studio","lapangan","kebun","angkasa"].indexOf(t)<0)t="neon";document.documentElement.setAttribute("data-theme",t)})();</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700&family=Instrument+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -55,6 +55,30 @@
   color-scheme: light;
 }
 
+:root[data-theme="lapangan"] {
+  --bg: #0b3d1e; --panel: rgba(6,44,22,.6); --input: rgba(3,24,12,.7);
+  --fg: #f4fff6; --muted: #a8dbb7; --line: rgba(255,255,255,.2);
+  --accent: #ffd23f; --accent2: #7dff9b; --accent-fg: #0a2e16;
+  --rec: #ff6b6b; --ok: #7dff9b; --glow: rgba(255,210,63,.32);
+  --g1: rgba(255,210,63,.14); --g2: rgba(125,255,155,.12);
+  --pattern: repeating-linear-gradient(90deg, rgba(255,255,255,.035) 0 80px, transparent 80px 160px);
+}
+:root[data-theme="kebun"] {
+  --bg: #eef4e4; --panel: rgba(255,255,255,.72); --input: #ffffff;
+  --fg: #1c3a24; --muted: #5b7a5e; --line: #bfd3b0;
+  --accent: #2e8b57; --accent2: #e9a23b; --accent-fg: #ffffff;
+  --rec: #c0392b; --ok: #2e8b57; --glow: rgba(46,139,87,.28);
+  --g1: rgba(46,139,87,.14); --g2: rgba(233,162,59,.18);
+  color-scheme: light;
+}
+:root[data-theme="angkasa"] {
+  --bg: #060719; --panel: rgba(20,16,50,.6); --input: rgba(8,6,28,.7);
+  --fg: #eeeaff; --muted: #9b96d0; --line: rgba(160,140,255,.24);
+  --accent: #a78bfa; --accent2: #38e1ff; --accent-fg: #0a0520;
+  --rec: #ff6b9d; --ok: #5dfcb4; --glow: rgba(167,139,250,.4);
+  --g1: rgba(167,139,250,.18); --g2: rgba(56,225,255,.13);
+}
+
 * { box-sizing: border-box; }
 [hidden] { display: none !important; }
 body {
@@ -62,6 +86,7 @@ body {
   background:
     radial-gradient(900px 520px at 8% -8%, var(--g1), transparent 62%),
     radial-gradient(800px 520px at 100% 0%, var(--g2), transparent 58%),
+    var(--pattern, none),
     var(--bg);
   background-attachment: fixed;
 }
@@ -184,9 +209,59 @@ pre { overflow-x: auto; background: var(--input); border: 1px solid var(--line);
 @media(min-width:720px){.suno-menu{grid-template-columns:repeat(3,minmax(0,1fr))}}
 
 
+/* ===== Efek kren: judul berkilau, latar animasi per tema ===== */
+.wrap { position: relative; z-index: 1; }
+.grad { background-size: 200% 100%; animation: shimmer 6s linear infinite; }
+@keyframes shimmer { to { background-position: 200% 0; } }
+.panel { transition: transform .25s ease, box-shadow .25s ease; }
+.panel:hover { transform: translateY(-2px); }
+
+.scene { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
+.scene:empty { display: none; }
+
+/* Lapangan: garis lapangan, lampu sorot, bola menggelinding */
+.pitch { position: absolute; inset: 0; width: 100%; height: 100%; opacity: .16; }
+.floodlight { position: absolute; top: -140px; width: 440px; height: 440px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(255,250,200,.38), transparent 65%); animation: glow 4s ease-in-out infinite alternate; }
+.floodlight.l { left: -150px; }
+.floodlight.r { right: -150px; animation-delay: -2s; }
+.pitch-ball { position: absolute; bottom: 7vh; left: 0; font-size: 34px; line-height: 1; filter: drop-shadow(0 4px 6px rgba(0,0,0,.35)); animation: ballRun 16s linear infinite; }
+@keyframes ballRun { from { transform: translateX(-80px) rotate(0); } to { transform: translateX(calc(100vw + 80px)) rotate(1440deg); } }
+@keyframes glow { from { opacity: .5; } to { opacity: 1; } }
+
+/* Kebun: matahari, daun dan kelopak berjatuhan, bukit rumput */
+.sun { position: absolute; top: -170px; right: -130px; width: 480px; height: 480px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(255,214,102,.6), transparent 62%); animation: glow 6s ease-in-out infinite alternate; }
+.petal { position: absolute; top: -8vh; left: var(--x, 50%); font-size: var(--s, 20px); opacity: .85;
+  animation: fall var(--d, 12s) linear var(--dl, 0s) infinite; }
+@keyframes fall {
+  0% { transform: translate3d(0,0,0) rotate(0); }
+  50% { transform: translate3d(var(--sway, 40px), 55vh, 0) rotate(180deg); }
+  100% { transform: translate3d(calc(var(--sway, 40px) * -1), 112vh, 0) rotate(360deg); }
+}
+.grass { position: absolute; left: 0; bottom: 0; width: 100%; height: 120px; }
+.grass path { fill: var(--accent); opacity: .16; }
+
+/* Angkasa: bintang berkedip dan komet */
+.star { position: absolute; width: var(--s, 2px); height: var(--s, 2px); border-radius: 50%; background: #fff; box-shadow: 0 0 6px #fff;
+  animation: twinkle var(--d, 3s) ease-in-out var(--dl, 0s) infinite alternate; }
+@keyframes twinkle { from { opacity: .15; transform: scale(.7); } to { opacity: 1; transform: scale(1.2); } }
+.comet { position: absolute; top: 8vh; left: -20vw; width: 180px; height: 2px;
+  background: linear-gradient(90deg, transparent, #38e1ff); transform: rotate(25deg); opacity: 0; animation: comet 7s linear infinite; }
+@keyframes comet {
+  0% { opacity: 0; transform: translate(0,0) rotate(25deg); }
+  8% { opacity: 1; }
+  20%, 100% { opacity: 0; transform: translate(120vw, 60vh) rotate(25deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scene *, .grad, .panel { animation: none !important; transition: none !important; }
+  .panel:hover { transform: none; }
+}
 </style>
 </head>
 <body>
+<div class="scene" id="scene" aria-hidden="true"></div>
 <div class="wrap" id="app">
   <header class="top">
     <div>
@@ -200,6 +275,9 @@ pre { overflow-x: auto; background: var(--input); border: 1px solid var(--line);
       <button type="button" data-t="terminal" style="--c1:#39ff6a;--c2:#1fd9a8"><i></i>Terminal</button>
       <button type="button" data-t="ocean" style="--c1:#3de0cb;--c2:#4d8bff"><i></i>Ocean</button>
       <button type="button" data-t="studio" style="--c1:#2b55f5;--c2:#8a3dff"><i></i>Studio</button>
+      <button type="button" data-t="lapangan" style="--c1:#ffd23f;--c2:#1f9d55"><i></i>⚽ Lapangan</button>
+      <button type="button" data-t="kebun" style="--c1:#2e8b57;--c2:#e9a23b"><i></i>🌿 Kebun</button>
+      <button type="button" data-t="angkasa" style="--c1:#a78bfa;--c2:#38e1ff"><i></i>🌌 Angkasa</button>
     </div>
     </div>
   </header>
@@ -267,7 +345,7 @@ pre { overflow-x: auto; background: var(--input); border: 1px solid var(--line);
       </div>
       <div class="field" id="continueAtField" hidden>
         <label for="continueAt">Lanjutkan dari detik ke-</label>
-        <input type="number" id="continueAt" min="0" max="600" step="1" value="90">
+        <input type="number" id="continueAt" min="1" max="600" step="1" value="30">
         <div class="hint">Posisi pada audio sumber tempat lagu mulai diperpanjang.</div>
       </div>
       <details id="advancedSunoFields">
@@ -459,12 +537,7 @@ pre { overflow-x: auto; background: var(--input); border: 1px solid var(--line);
     clearInterval(timer);
     submitting = false;
     $("go").disabled = false;
-    // Prefer a safe diagnostic supplied by the backend over a generic message.
-    // This makes API-key, parameter, credit and endpoint errors distinguishable.
-    var detail = typeof msg === "string" ? msg.trim() : "";
-    var friendly = ERR[code] || "Terjadi kendala saat memproses permintaan. Coba lagi nanti.";
-    if (detail && detail !== friendly) friendly += " Detail: " + detail.slice(0, 240);
-    setState("err", "Gagal", friendly, true);
+    setState("err", "Gagal", ERR[code] || "Terjadi kendala saat memproses permintaan. Coba lagi nanti.", true);
   }
 
   function collectUrls(value, out) {
@@ -579,6 +652,12 @@ pre { overflow-x: auto; background: var(--input); border: 1px solid var(--line);
       $("go").disabled = false;
       return setState("err", "Gagal", "Masukkan URL audio publik yang valid.", true);
     }
+    if (!isKling && workflow === "extend" && !$("style").value.trim()) {
+      return setState("err", "Gagal", "Isi gaya musik untuk Upload Extend Cover.", true);
+    }
+    if (!isKling && workflow === "extend" && !(Number($("continueAt").value) > 0)) {
+      return setState("err", "Gagal", "Posisi lanjutan harus lebih dari 0 detik.", true);
+    }
     if (isKling) {
       var imageUrl = $("klingImageUrl").value.trim(), videoUrl = $("klingVideoUrl").value.trim();
       if (!/^https?:\/\//i.test(imageUrl) || !/^https?:\/\//i.test(videoUrl)) return setState("err", "Gagal", "Masukkan URL publik gambar dan video yang valid.", true);
@@ -637,7 +716,7 @@ pre { overflow-x: auto; background: var(--input); border: 1px solid var(--line);
       if (j.code !== 200) {
         // Tampilkan pesan yang ramah pengguna; jangan bocorkan nama provider,
         // detail mentah dari server, atau kode HTTP internal ke antarmuka.
-        return fail(j.code, j.detail || j.msg || "");
+        return fail(j.code, "");
       }
       keyNote = "Menggunakan rotasi otomatis API key.";
       poll(j.data.taskId);
@@ -673,6 +752,42 @@ pre { overflow-x: auto; background: var(--input); border: 1px solid var(--line);
     s.style.setProperty("--delay", (-Math.random() * 2).toFixed(2) + "s");
     eq.appendChild(s);
   }
+})();
+</script>
+<script>
+(function () {
+  var s = document.getElementById("scene");
+  var PITCH = '<svg class="pitch" viewBox="0 0 1000 600" preserveAspectRatio="xMidYMid slice" fill="none" stroke="#fff" stroke-width="3">' +
+    '<rect x="30" y="30" width="940" height="540"/><line x1="500" y1="30" x2="500" y2="570"/>' +
+    '<circle cx="500" cy="300" r="90"/><circle cx="500" cy="300" r="4" fill="#fff"/>' +
+    '<rect x="30" y="170" width="150" height="260"/><rect x="820" y="170" width="150" height="260"/>' +
+    '<rect x="30" y="230" width="55" height="140"/><rect x="915" y="230" width="55" height="140"/></svg>';
+  var GRASS = '<svg class="grass" viewBox="0 0 1000 120" preserveAspectRatio="none"><path d="M0 60 Q250 0 500 50 T1000 40 V120 H0Z"/><path d="M0 90 Q300 40 600 85 T1000 75 V120 H0Z"/></svg>';
+  function r(a, b) { return a + Math.random() * (b - a); }
+  function build(t) {
+    var h = "";
+    if (t === "lapangan") {
+      h = PITCH + '<div class="floodlight l"></div><div class="floodlight r"></div><span class="pitch-ball">⚽</span>';
+    } else if (t === "kebun") {
+      var em = ["🍃", "🌸", "🌼", "🍂", "🌿"];
+      h = '<div class="sun"></div>';
+      for (var i = 0; i < 24; i++) {
+        h += '<span class="petal" style="--x:' + r(0, 100).toFixed(1) + '%;--s:' + r(14, 26).toFixed(0) + 'px;--d:' + r(9, 18).toFixed(1) +
+          's;--dl:-' + r(0, 18).toFixed(1) + 's;--sway:' + r(-60, 60).toFixed(0) + 'px">' + em[i % em.length] + '</span>';
+      }
+      h += GRASS;
+    } else if (t === "angkasa") {
+      for (var j = 0; j < 90; j++) {
+        h += '<span class="star" style="left:' + r(0, 100).toFixed(1) + '%;top:' + r(0, 100).toFixed(1) + '%;--s:' + r(1, 3).toFixed(1) +
+          'px;--d:' + r(2, 5).toFixed(1) + 's;--dl:-' + r(0, 5).toFixed(1) + 's"></span>';
+      }
+      h += '<span class="comet"></span>';
+    }
+    s.innerHTML = h;
+  }
+  function apply() { build(document.documentElement.getAttribute("data-theme")); }
+  new MutationObserver(apply).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+  apply();
 })();
 </script>
 </body>
