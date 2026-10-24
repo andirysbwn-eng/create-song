@@ -193,7 +193,7 @@ pre { overflow-x: auto; background: var(--input); border: 1px solid var(--line);
       <div class="field" style="margin-bottom:16px">
         <label for="apiKey">API Key pribadi</label>
         <input type="password" id="apiKey" autocomplete="off" spellcheck="false" placeholder="Masukkan API key milik lo" required>
-        <div class="hint">API key dikirim langsung ke backend saat request dan tidak disimpan di halaman atau file keys.txt. Gunakan API key yang cocok dengan penyedia API yang dikonfigurasi. Bisa tempel key mentah atau format Bearer key.</div>
+        <div class="hint">API key dikirim langsung ke backend saat request dan tidak disimpan di halaman atau file keys.txt. Endpoint aktif: api.emix.ai. Key harus diterbitkan oleh Emix; key dari provider lain akan ditolak. Bisa tempel key mentah atau format Bearer key.</div>
       </div>
 
       <div class="field">
@@ -215,13 +215,19 @@ pre { overflow-x: auto; background: var(--input); border: 1px solid var(--line);
 
       <div class="field" id="sourceAudioField">
         <label for="uploadUrl">Link audio <span class="hint">(wajib untuk Cover Audio/Extend)</span></label>
-        <input type="url" id="uploadUrl" placeholder="https://.../audio.mp3">
-        <div class="hint">URL audio harus bisa diakses publik oleh layanan AI.</div>
+        <input type="url" id="uploadUrl" placeholder="Link audio akan terisi otomatis setelah upload">
+        <div class="field" style="margin-top:10px">
+          <label for="audioFile">Atau pilih audio dari HP</label>
+          <input type="file" id="audioFile" accept="audio/*,.mp3,.wav,.aac,.m4a,.ogg,.flac">
+          <button type="button" id="uploadAudioBtn" class="secondary" style="margin-top:8px">Upload audio ke dbimg & isi link</button>
+          <div class="hint" id="audioUploadStatus">Pilih file lalu upload. Link publik akan otomatis dimasukkan ke kolom Link audio.</div>
+        </div>
+        <div class="hint">URL audio harus bisa diakses publik oleh EMIX. dbimg membatasi ukuran upload hingga 75 MB; batas EMIX untuk sumber audio bisa lebih rendah.</div>
       </div>
 
       <div class="field">
         <label for="title">Judul</label>
-        <input type="text" id="title" maxlength="100" placeholder="Judul lagu baru">
+        <input type="text" id="title" maxlength="80" placeholder="Judul lagu baru">
       </div>
 
       <div class="field">
@@ -288,12 +294,18 @@ pre { overflow-x: auto; background: var(--input); border: 1px solid var(--line);
         <div class="field">
           <label for="klingImageUrl">URL gambar karakter</label>
           <input type="url" id="klingImageUrl" placeholder="https://.../gambar.png">
+          <input type="file" id="klingImageFile" accept="image/jpeg,image/png,image/webp" style="margin-top:8px">
+          <button type="button" id="uploadKlingImageBtn" class="secondary" style="margin-top:8px">Upload gambar ke dbimg</button>
+          <div class="hint" id="klingImageUploadStatus">Pilih gambar untuk mengisi URL secara otomatis.</div>
           <div class="hint">JPG/JPEG/PNG, maksimal 10 MB, dimensi lebih dari 300 px, rasio 2:5 sampai 5:2.</div>
         </div>
         <div class="field">
           <label for="klingVideoUrl">URL video gerakan</label>
           <input type="url" id="klingVideoUrl" placeholder="https://.../gerakan.mp4">
-          <div class="hint">File video harus punya URL publik yang bisa diakses layanan AI.</div>
+          <input type="file" id="klingVideoFile" accept="video/mp4,video/quicktime,.mp4,.mov" style="margin-top:8px">
+          <button type="button" id="uploadKlingVideoBtn" class="secondary" style="margin-top:8px">Upload video ke dbimg</button>
+          <div class="hint" id="klingVideoUploadStatus">Pilih video untuk mengisi URL secara otomatis.</div>
+          <div class="hint">MP4 atau MOV, maksimal 100 MB. File harus punya URL publik yang bisa diakses layanan AI. dbimg membatasi file 75 MB.</div>
         </div>
         <div class="field">
           <label for="klingPrompt">Prompt (opsional)</label>
@@ -336,6 +348,81 @@ pre { overflow-x: auto; background: var(--input); border: 1px solid var(--line);
     if (json) h["Content-Type"] = "application/json";
     return h;
   }
+
+  // Upload lewat backend. DBIMG_API_KEY disimpan di Environment Variables, bukan di browser/ZIP.
+  async function uploadToDbimg(file, statusEl, button) {
+    if (!file) throw new Error("Pilih file terlebih dahulu.");
+    if (file.size > 75 * 1024 * 1024) throw new Error("Ukuran file melebihi batas dbimg 75 MB.");
+    var old = button.textContent;
+    button.disabled = true; button.textContent = "Mengunggah…";
+    statusEl.textContent = "Mengunggah " + file.name + " (" + (file.size / 1048576).toFixed(1) + " MB) ke dbimg…";
+    try {
+      var r = await fetch("/api/dbimg-upload?filename=" + encodeURIComponent(file.name), {
+        method: "POST",
+        headers: { "Content-Type": file.type || "application/octet-stream" },
+        body: file
+      });
+      var j = await r.json().catch(function(){ return {}; });
+      if (!r.ok) throw new Error(j.error || j.message || ("Upload gagal HTTP " + r.status));
+      var rawUrl = j.directUrl || j.url || j.data && (j.data.directUrl || j.data.url);
+      if (!rawUrl) throw new Error("URL hasil upload tidak ditemukan pada respons DBImg.");
+      var directUrl = new URL(rawUrl, "https://dbimg.app").href;
+      statusEl.textContent = "Upload selesai: " + directUrl;
+      return directUrl;
+    } catch (e) {
+      var msg = e && e.message ? e.message : String(e);
+      if (file.size > 4 * 1024 * 1024) msg += " — deployment Vercel memiliki batas body request sekitar 4.5 MB; file besar perlu uploader/storage terpisah yang mendukung upload langsung.";
+      statusEl.textContent = "Upload gagal: " + msg;
+      throw new Error(msg);
+    } finally {
+      button.disabled = false; button.textContent = old;
+    }
+  }
+
+  async function uploadToDbimg(file, statusEl, button) {
+    var key = $("dbimgKey").value.trim();
+    if (!key) throw new Error("Masukkan DBImg API Key terlebih dahulu.");
+    if (!file) throw new Error("Pilih file terlebih dahulu.");
+    if (file.size > 75 * 1024 * 1024) throw new Error("Ukuran file melebihi batas dbimg 75 MB.");
+    var old = button.textContent;
+    button.disabled = true; button.textContent = "Mengunggah…";
+    statusEl.textContent = "Mengunggah " + file.name + " (" + (file.size / 1048576).toFixed(1) + " MB) ke dbimg…";
+    try {
+      var fd = new FormData(); fd.append("file", file, file.name);
+      var r = await fetch("https://dbimg.app/api/upload", {
+        method: "POST",
+        headers: { "Authorization": "Bearer " + key },
+        body: fd
+      });
+      var j = await r.json().catch(function(){ return {}; });
+      if (!r.ok) throw new Error(j.error || j.message || ("dbimg HTTP " + r.status));
+      var rawUrl = j.directUrl || j.url || j.data && (j.data.directUrl || j.data.url);
+      if (!rawUrl) throw new Error("Upload mendapat respons sukses tetapi directUrl tidak ditemukan: " + JSON.stringify(j).slice(0, 250));
+      var directUrl = new URL(rawUrl, "https://dbimg.app").href;
+      statusEl.textContent = "Upload selesai: " + directUrl;
+      return directUrl;
+    } catch (e) {
+      var msg = e && e.message ? e.message : String(e);
+      if (/Failed to fetch|NetworkError|CORS/i.test(msg)) msg += " — browser mungkin diblokir CORS oleh dbimg. Jika begitu, API upload harus mendukung CORS atau memakai uploader server eksternal.";
+      statusEl.textContent = "Upload gagal: " + msg;
+      throw new Error(msg);
+    } finally {
+      button.disabled = false; button.textContent = old;
+    }
+  }
+
+  $("uploadAudioBtn").addEventListener("click", async function(){
+    try { var u = await uploadToDbimg($("audioFile").files[0], $("audioUploadStatus"), this); $("uploadUrl").value = u; }
+    catch(e) { setState("err", "Upload gagal", e.message, true); }
+  });
+  $("uploadKlingImageBtn").addEventListener("click", async function(){
+    try { var u = await uploadToDbimg($("klingImageFile").files[0], $("klingImageUploadStatus"), this); $("klingImageUrl").value = u; }
+    catch(e) { setState("err", "Upload gambar gagal", e.message, true); }
+  });
+  $("uploadKlingVideoBtn").addEventListener("click", async function(){
+    try { var u = await uploadToDbimg($("klingVideoFile").files[0], $("klingVideoUploadStatus"), this); $("klingVideoUrl").value = u; }
+    catch(e) { setState("err", "Upload video gagal", e.message, true); }
+  });
 
   // ---------- Form ----------
   function refreshWorkflow() {
@@ -387,7 +474,7 @@ pre { overflow-x: auto; background: var(--input); border: 1px solid var(--line);
 
   var ERR = {
     400: "Parameter tidak valid. Periksa isian form.",
-    401: "API key ditolak (HTTP 401). Pastikan key benar, aktif, dan berasal dari penyedia API yang sesuai.",
+    401: "API key ditolak oleh Emix (HTTP 401). Pastikan key berasal dari akun Emix dan belum dicabut; key provider lain tidak bisa dipakai di endpoint ini.",
     402: "Saldo API key tidak cukup.",
     404: "Sumber tidak ditemukan.",
     422: "Validasi gagal. Periksa link audio dan isian lainnya.",
@@ -501,9 +588,21 @@ pre { overflow-x: auto; background: var(--input); border: 1px solid var(--line);
     $("tracks").innerHTML = ""; $("rawBox").hidden = true;
     var workflow = $("workflow").value;
     var isKling = workflow === "kling";
+    // If the user selected local files, upload them first and feed the resulting public URL into the task.
+    try {
+      if (isKling) {
+        if ($("klingImageFile").files[0]) await uploadToDbimg($("klingImageFile").files[0], $("klingImageUploadStatus"), $("uploadKlingImageBtn" )).then(function(u){ $("klingImageUrl").value = u; });
+        if ($("klingVideoFile").files[0]) await uploadToDbimg($("klingVideoFile").files[0], $("klingVideoUploadStatus"), $("uploadKlingVideoBtn")).then(function(u){ $("klingVideoUrl").value = u; });
+      } else if (["cover", "extend"].includes(workflow) && $("audioFile").files[0]) {
+        await uploadToDbimg($("audioFile").files[0], $("audioUploadStatus"), $("uploadAudioBtn")).then(function(u){ $("uploadUrl").value = u; });
+      }
+    } catch (uploadError) {
+      $("go").disabled = false;
+      return setState("err", "Upload gagal", uploadError.message, true);
+    }
     if (!isKling && ["cover", "extend"].includes(workflow) && !/^https?:\/\//i.test($("uploadUrl").value.trim())) {
       $("go").disabled = false;
-      return setState("err", "Gagal", "Masukkan URL audio publik yang valid.", true);
+      return setState("err", "Gagal", "Pilih file audio untuk upload otomatis atau masukkan URL audio publik.", true);
     }
     if (isKling) {
       var imageUrl = $("klingImageUrl").value.trim(), videoUrl = $("klingVideoUrl").value.trim();
