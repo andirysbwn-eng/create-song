@@ -560,12 +560,20 @@ pre { overflow-x: auto; background: var(--input); border: 1px solid var(--line);
       var r = await fetch("/api/create", { method: "POST", headers: headers(true), body: JSON.stringify({ workflow: workflow, input: input }) });
       var j = await r.json();
       if (j.code !== 200) {
-        var detail = j.msg || j.providerMessage || "Permintaan gagal.";
-        if (j.providerMessage && j.providerMessage !== detail) detail += " Detail: " + j.providerMessage;
-        if (j.source === "provider" && j.upstreamStatus) {
-          detail += " [Respons server AI HTTP " + j.upstreamStatus + "].";
+        // Tampilkan pesan yang ramah pengguna; jangan bocorkan nama provider,
+        // detail mentah dari server, atau kode HTTP internal ke antarmuka.
+        var detail;
+        if (j.code === 422) {
+          detail = "Permintaan tidak dapat diproses. Periksa isian dan link audio pada menu yang dipilih, lalu coba lagi.";
+        } else if (j.code === 401) {
+          detail = "Kunci layanan tidak dapat digunakan. Periksa konfigurasi API key.";
+        } else if (j.code === 402) {
+          detail = "Saldo layanan tidak mencukupi.";
+        } else if (j.code === 429) {
+          detail = "Terlalu banyak permintaan. Tunggu sebentar lalu coba lagi.";
+        } else {
+          detail = "Permintaan gagal diproses. Silakan coba lagi nanti.";
         }
-        if (j.code === 422) detail += " Periksa isian khusus untuk menu yang dipilih.";
         return fail(j.code, detail);
       }
       keyNote = "API key dimuat dari konfigurasi server.";
