@@ -190,11 +190,6 @@ pre { overflow-x: auto; background: var(--input); border: 1px solid var(--line);
     <form class="panel" id="form">
       <h2>Pengaturan lagu</h2>
 
-      <div class="field" style="margin-bottom:16px">
-        <label>Konfigurasi API</label>
-        <div class="hint">API key dibaca otomatis dari file <code>keys.txt</code> di folder utama project. Jangan bagikan file tersebut. Untuk hosting, atur variabel lingkungan <code>API_KEY</code>.</div>
-      </div>
-
       <div class="field">
         <label>Menu Suno</label>
         <div class="suno-menu" id="sunoMenu" role="group" aria-label="Pilih fitur Suno">
@@ -221,6 +216,12 @@ pre { overflow-x: auto; background: var(--input); border: 1px solid var(--line);
       <div class="field">
         <label for="title">Judul</label>
         <input type="text" id="title" maxlength="80" placeholder="Judul lagu baru">
+      </div>
+
+      <div class="field" id="promptField">
+        <label for="prompt">Prompt / deskripsi lagu</label>
+        <textarea id="prompt" maxlength="3000" placeholder="Contoh: lagu pop romantis tentang rindu, vokal emosional, suasana malam"></textarea>
+        <div class="hint">Deskripsikan ide lagu. Di mode sederhana, AI dapat membuat lirik otomatis.</div>
       </div>
 
       <div class="field">
@@ -518,7 +519,8 @@ pre { overflow-x: auto; background: var(--input); border: 1px solid var(--line);
       mode: $("klingMode").value
     } : {
       model: $("model").value,
-      customMode: true,
+      customMode: workflow === "generate" ? false : true,
+      prompt: $("prompt").value.trim(),
       uploadUrl: $("uploadUrl").value.trim(),
       title: $("title").value.trim(),
       style: $("style").value.trim(),
@@ -540,8 +542,14 @@ pre { overflow-x: auto; background: var(--input); border: 1px solid var(--line);
     // Keep the style only in `style`; never send it as `prompt` by accident.
     if (!isKling && workflow === "generate") {
       delete input.uploadUrl;
-      delete input.prompt;
-      if (input.instrumental) { delete input.Lyrics; delete input.audioWeight; }
+      // Non-custom Generate Music hanya menerima prompt/style/lyrics/attachments.
+      delete input.title; delete input.negativeTags; delete input.duration;
+      delete input.vocalGender; delete input.styleWeight; delete input.weirdnessConstraint;
+      delete input.audioWeight; delete input.variety; delete input.continueAt;
+      delete input.audioId; delete input.audioIds; delete input.startTime; delete input.endTime;
+      delete input.stylePrompt; delete input.voiceId;
+      if (input.instrumental) { delete input.Lyrics; delete input.lyrics; }
+      else if (input.Lyrics) { input.lyrics = input.Lyrics; delete input.Lyrics; }
     } else if (!isKling) {
       // Cover/extend endpoints use the style as their generation prompt.
       input.prompt = $("style").value.trim();
