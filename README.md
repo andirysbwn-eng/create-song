@@ -1,26 +1,24 @@
-# GenetikaAI Suno — 3 Menu
+# GenetikaAI
 
-## Konfigurasi API key melalui TXT
-- Isi file `keys.txt` di folder utama project dengan API key pada satu baris, lalu simpan.
-- Contoh isi: `API_KEY=isi_key_anda_di_sini` atau cukup tempel key mentah.
-- Server membaca key otomatis; tidak perlu mengetik key di halaman web.
-- `keys.txt` tidak disajikan oleh server lokal dan ditambahkan ke `.gitignore`. Jangan kirim atau unggah file ini ke repositori publik.
-- Untuk hosting/serverless, atur environment variable `API_KEY` pada pengaturan hosting. Jangan mengandalkan `keys.txt` lokal yang tidak ikut ter-deploy.
+Website generator musik AI dengan backend Node.js dan dukungan deployment Vercel.
 
-## Menu yang tersedia
-1. Generate Music
-2. Upload Cover Audio
-3. Upload Extend Cover
+## Deploy ke Vercel
+
+Tambahkan environment variables di Project Settings → Environment Variables:
+
+- `API_KEY_1` — API key pertama (wajib)
+- `API_KEY_2` — API key cadangan (opsional)
+- `API_KEY_3`, dan seterusnya — key tambahan (opsional)
+
+Tempel key asli pada kolom **Value** masing-masing. Gunakan tipe **Sensitive** untuk setiap key. Setelah menyimpan, lakukan redeploy. Backend mencoba key berikutnya jika provider menolak key, kuota habis, atau rate limit (HTTP 401, 402, 403, atau 429). Kegagalan lain seperti parameter request yang salah tidak memicu pergantian key.
+
+Nama lama `API_KEY` dan `SUNO_API_KEY` masih didukung untuk kompatibilitas, tetapi gunakan `API_KEY_1` dan seterusnya untuk key berurutan.
 
 ## Jalankan lokal
-- Node.js 18 atau lebih baru.
-- Buat/isi `keys.txt` di folder utama.
-- Jalankan `npm start`.
-- Buka `http://localhost:3000`.
 
-## Catatan
-- API key wajib aktif dan memiliki saldo/kredit yang cukup.
-- Panggilan nyata ke layanan AI perlu diuji menggunakan API key milik pengguna.
-- Generate Music memisahkan gaya musik dari lirik; instrumental tidak mengirim parameter vokal yang tidak didukung.
-- Pembuatan task menggunakan `POST /api/v1/client/tasks` dan pemeriksaan task menggunakan `GET /api/v1/client/tasks?taskId=...` pada endpoint layanan yang dikonfigurasi di backend.
-- Pada deployment Vercel, endpoint proxy membatasi upload sampai 4 MB karena batas ukuran request serverless. Untuk file lebih besar, diperlukan layanan upload langsung/external storage.
+- Node.js 18 atau lebih baru.
+- Untuk lokal, isi `keys.txt` dengan satu key per baris, atau gunakan format `API_KEY_1=...` dan `API_KEY_2=...`.
+- `keys.txt` tidak disajikan oleh server dan tercantum dalam `.gitignore`.
+- Jalankan `npm start`, lalu buka `http://localhost:3000`.
+
+Jangan commit atau bagikan API key. File `keys.txt` lokal tidak otomatis tersedia di Vercel; untuk Vercel gunakan Environment Variables.
