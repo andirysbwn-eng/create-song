@@ -183,52 +183,11 @@ pre { overflow-x: auto; background: var(--input); border: 1px solid var(--line);
 .suno-menu-item:focus-visible{outline:2px solid var(--accent,#8b5cf6);outline-offset:2px}
 @media(min-width:720px){.suno-menu{grid-template-columns:repeat(3,minmax(0,1fr))}}
 
-#app[hidden], #loginPanel[hidden] { display:none !important; }
-.login-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}
-.login-card{width:min(420px,100%);background:var(--panel,#141827);border:1px solid var(--border,#303544);border-radius:20px;padding:28px;box-shadow:0 20px 80px #0005}
-.login-card h1{margin:0 0 8px}.login-card p{color:var(--muted,#9aa3b8);line-height:1.5}.login-card .field{margin:16px 0}.login-card input{width:100%;box-sizing:border-box}.login-card button{width:100%;margin-top:10px}.login-error{color:#ff7185;min-height:22px;font-size:14px}.account-bar{display:flex;gap:10px;align-items:center;justify-content:flex-end;margin-bottom:12px;font-size:13px;color:var(--muted,#9aa3b8)}
-
-/* Cover Audio: tata letak dibuat mendekati form Playground pada referensi pengguna. */
-#form.cover-playground { grid-column:1 / -1; background:#fff; color:#20212b; border:1px solid #eceaf4; border-radius:28px; padding:24px; box-shadow:0 14px 40px rgba(99,65,180,.09); }
-#form.cover-playground > .field:has(#sunoMenu) { display:none; }
-#form.cover-playground h2 { color:#7b3fe4; font:600 12px var(--f-data); letter-spacing:.12em; }
-#form.cover-playground label { font:600 15px var(--f-data); color:#20212b; margin-bottom:9px; }
-#form.cover-playground .hint { color:#8b8c98; font:400 13px/1.5 var(--f-body); margin-top:8px; }
-#form.cover-playground input[type=text], #form.cover-playground input[type=url], #form.cover-playground input[type=number], #form.cover-playground textarea, #form.cover-playground select { color:#242632; background:#fff; border:1px solid #dedee5; border-radius:14px; padding:13px 15px; min-height:52px; box-shadow:0 1px 1px #00000004; }
-#form.cover-playground textarea { min-height:150px; }
-#form.cover-playground select option { background:#fff; color:#242632; }
-#form.cover-playground .field { margin-bottom:28px; }
-#form.cover-playground .cover-audio-preview { width:100%; display:block; margin-top:14px; border:1px solid #e2e2e8; border-radius:18px; background:#f4f4f6; padding:12px; }
-#form.cover-playground .cover-audio-preview audio { width:100%; display:block; }
-#form.cover-playground .cover-duration-row { display:grid; grid-template-columns:minmax(0,1fr) 100px; gap:12px; align-items:center; }
-#form.cover-playground .cover-duration-row input[type=range] { width:100%; accent-color:#8b45ed; }
-#form.cover-playground .cover-duration-row input[type=number] { min-height:48px; text-align:center; font:600 15px var(--f-body); padding:8px; }
-#form.cover-playground #durationOut { display:inline-block; background:linear-gradient(100deg,#8141e9,#d53ee7); color:white; padding:4px 12px; border-radius:10px; min-width:58px; text-align:center; margin-bottom:10px; }
-#form.cover-playground .check.block { border:1px solid #e1e1e8; border-radius:16px; padding:17px; margin:8px 0 28px; background:#fff; }
-#form.cover-playground .check input { accent-color:#8b45ed; }
-#form.cover-playground button.go { background:linear-gradient(100deg,#753ce7,#d53ee8); color:#fff; border-radius:15px; }
-#form.cover-playground .cover-vocal-options { display:flex; gap:10px; }
-#form.cover-playground .cover-vocal-options label { display:flex; align-items:center; gap:8px; border:1px solid #dedee5; border-radius:12px; padding:10px 14px; cursor:pointer; font:600 14px var(--f-body); }
-#form.cover-playground .cover-vocal-options input { accent-color:#8b45ed; }
-#form.cover-playground .cover-vocal-options label:has(input:checked) { border-color:#a27be9; background:#f6f0ff; color:#7139d3; }
-@media(max-width:600px) { #form.cover-playground { padding:20px 16px; border-radius:24px; } #form.cover-playground .cover-duration-row { grid-template-columns:minmax(0,1fr) 78px; gap:8px; } }
-
 
 </style>
 </head>
 <body>
-<section class="login-wrap" id="loginPanel">
-  <form class="login-card" id="loginForm">
-    <h1>Studio <span class="grad">Cover</span></h1>
-    <p>Masuk menggunakan akun yang diberikan administrator.</p>
-    <div class="field"><label for="loginUsername">Username</label><input id="loginUsername" name="username" autocomplete="username" required maxlength="80" placeholder="Username"></div>
-    <div class="field"><label for="loginPassword">Password</label><input id="loginPassword" name="password" type="password" autocomplete="current-password" required maxlength="200" placeholder="Password"></div>
-    <div class="login-error" id="loginError" role="alert"></div>
-    <button class="go" id="loginButton" type="submit">Masuk</button>
-  </form>
-</section>
-<div class="wrap" id="app" hidden>
-  <div class="account-bar"><span id="accountName"></span><button type="button" id="logoutButton">Keluar</button></div>
+<div class="wrap" id="app">
   <header class="top">
     <div>
       <h1>Studio <span class="grad">Cover</span></h1>
@@ -245,6 +204,19 @@ pre { overflow-x: auto; background: var(--input); border: 1px solid var(--line);
     </div>
   </header>
   <div class="eq" id="eq" aria-hidden="true"></div>
+
+  <section class="panel keybox" aria-label="Pengaturan API key" style="margin-bottom:20px">
+    <h2>API Key</h2>
+    <p class="hint">Masukkan satu API key atau beberapa key. Jika satu key kehabisan kredit / ditolak, sistem otomatis mencoba key berikutnya. Key hanya digunakan dari browser ini.</p>
+    <div class="field">
+      <label for="apiKeysInput">API key (satu key per baris, atau pisahkan dengan koma)</label>
+      <textarea id="apiKeysInput" rows="4" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Tempel API key di sini"></textarea>
+    </div>
+    <div class="row" style="align-items:center">
+      <div class="field" style="margin-bottom:0"><label for="apiKeysFile">Atau upload file TXT</label><input id="apiKeysFile" type="file" accept=".txt,text/plain"></div>
+      <div><button class="secondary" type="button" id="clearKeys">Hapus key</button><div class="hint" id="keyCount" style="margin-top:8px">Belum ada key</div></div>
+    </div>
+  </section>
 
   <div class="grid">
     <form class="panel" id="form">
@@ -264,20 +236,18 @@ pre { overflow-x: auto; background: var(--input); border: 1px solid var(--line);
       <div id="sunoFields">
       <div class="field">
         <label for="model">Model</label>
-        <select id="model"><option value="V6">V6</option><option value="V6_WILD">V6_WILD</option><option value="V6_MINI">V6_MINI</option></select>
-        <div class="hint" id="modelHint" hidden>Select description</div>
+        <select id="model"><option value="V6">V6</option><option value="V6_WILD">V6 Wild</option><option value="V6_MINI">V6 Mini</option></select>
       </div>
 
       <div class="field" id="sourceAudioField">
         <label for="uploadUrl">Link audio <span class="hint">(wajib untuk Cover Audio/Extend)</span></label>
         <input type="url" id="uploadUrl" placeholder="https://.../audio.mp3">
-        <div class="hint" id="uploadUrlHint">URL audio harus bisa diakses publik oleh layanan AI.</div>
-        <div class="cover-audio-preview" id="coverAudioPreview" hidden><audio id="coverAudioPlayer" controls preload="metadata"></audio></div>
+        <div class="hint">URL audio harus bisa diakses publik oleh layanan AI.</div>
       </div>
 
       <div class="field">
         <label for="title">Judul</label>
-        <input type="text" id="title" maxlength="100" placeholder="Enter title...">
+        <input type="text" id="title" maxlength="80" placeholder="Judul lagu baru">
       </div>
 
       <div class="field" id="promptField">
@@ -286,16 +256,14 @@ pre { overflow-x: auto; background: var(--input); border: 1px solid var(--line);
         <div class="hint">Deskripsikan ide lagu. Di mode sederhana, AI dapat membuat lirik otomatis.</div>
       </div>
 
-      <div class="field" id="styleField">
+      <div class="field">
         <label for="style">Gaya musik</label>
-        <textarea id="style" maxlength="1000" placeholder="Enter your text here..."></textarea>
-        <div class="hint" id="styleHint">Gaya musik, misalnya Jazz, Classical, Electronic.</div>
+        <input type="text" id="style" maxlength="1000" placeholder="Contoh: dangdut koplo, akustik, jazz santai">
       </div>
 
       <div class="field" id="durationField">
         <label for="duration">Durasi</label>
-        <output id="durationOut">20 dtk</output>
-        <div class="cover-duration-row"><input type="range" id="duration" min="10" max="360" step="1" value="20"><input type="number" id="durationNumber" min="10" max="360" step="1" value="20" aria-label="Durasi dalam detik"></div>
+        <div class="range"><input type="range" id="duration" min="10" max="360" step="1" value="20"><output id="durationOut">20 dtk</output></div>
       </div>
       <div class="field" id="continueAtField" hidden>
         <label for="continueAt">Lanjutkan dari detik ke-</label>
@@ -344,7 +312,6 @@ pre { overflow-x: auto; background: var(--input); border: 1px solid var(--line);
       <div class="field" id="vocalField">
         <label for="vocalGender">Suara vokal</label>
         <select id="vocalGender"><option value="f">Perempuan</option><option value="m">Laki-laki</option></select>
-        <div class="cover-vocal-options" id="coverVocalOptions" hidden><label><input type="radio" name="coverVocal" value="f" checked> f</label><label><input type="radio" name="coverVocal" value="m"> m</label></div>
       </div>
 
       </div><!-- /sunoFields -->
@@ -397,27 +364,28 @@ pre { overflow-x: auto; background: var(--input); border: 1px solid var(--line);
   var timer = null, startedAt = 0;
   var submitting = false; // Mencegah satu aksi Generate mengirim POST ganda.
   var keyNote = "";
-  var loginPanel = $("loginPanel"), app = $("app");
-  async function checkLogin() {
-    try {
-      var r = await fetch("/api/auth", { credentials: "same-origin" });
-      var j = await r.json();
-      if (r.ok && j.authenticated) { loginPanel.hidden = true; app.hidden = false; $("accountName").textContent = "Masuk sebagai " + j.username; return true; }
-    } catch (_) {}
-    loginPanel.hidden = false; app.hidden = true; return false;
+  function parseKeys(raw) {
+    var values = [];
+    String(raw || "").split(/\r?\n/).forEach(function(line) {
+      line = line.trim(); if (!line || line.startsWith("#")) return;
+      line.split(/[,;\s]+/).forEach(function(part) {
+        var k = part.trim().replace(/^API_KEY(?:_\d+)?\s*=\s*/i, "").replace(/^Bearer\s+/i, "").replace(/^(["'])(.*)\1$/, "$2");
+        if (k.length >= 8 && k.length <= 512 && !/[\s]/.test(k) && values.indexOf(k) === -1) values.push(k);
+      });
+    });
+    return values;
   }
-  $("loginForm").addEventListener("submit", async function(ev) {
-    ev.preventDefault(); var b = $("loginButton"); b.disabled = true; b.textContent = "Memeriksa…"; $("loginError").textContent = "";
-    try {
-      var r = await fetch("/api/auth", { method:"POST", headers:{"Content-Type":"application/json"}, credentials:"same-origin", body:JSON.stringify({username:$("loginUsername").value.trim(), password:$("loginPassword").value}) });
-      var j = await r.json();
-      if (!r.ok || !j.authenticated) { $("loginError").textContent = j.msg || "Login gagal. Periksa kembali data akun."; return; }
-      $("loginPassword").value = ""; await checkLogin();
-    } catch (_) { $("loginError").textContent = "Tidak dapat terhubung. Coba lagi."; }
-    finally { b.disabled = false; b.textContent = "Masuk"; }
+  function currentKeys() { return parseKeys($("apiKeysInput").value); }
+  function updateKeyCount() { var n=currentKeys().length; $("keyCount").textContent=n ? n+" API key siap digunakan" : "Belum ada key"; }
+  try { $("apiKeysInput").value = localStorage.getItem("studio_cover_api_keys") || ""; } catch (_) {}
+  $("apiKeysInput").addEventListener("input", function() { try { localStorage.setItem("studio_cover_api_keys", $("apiKeysInput").value); } catch (_) {} updateKeyCount(); });
+  $("apiKeysFile").addEventListener("change", async function() {
+    var f=$("apiKeysFile").files && $("apiKeysFile").files[0]; if(!f) return;
+    try { var txt=await f.text(); $("apiKeysInput").value=txt; $("apiKeysInput").dispatchEvent(new Event("input")); }
+    catch (_) { setState("err","Gagal","File TXT tidak dapat dibaca.",true); }
   });
-  $("logoutButton").addEventListener("click", async function(){ try { await fetch("/api/auth", {method:"DELETE", credentials:"same-origin"}); } catch(_) {} await checkLogin(); });
-  checkLogin();
+  $("clearKeys").addEventListener("click", function() { $("apiKeysInput").value=""; $("apiKeysFile").value=""; try { localStorage.removeItem("studio_cover_api_keys"); } catch (_) {} updateKeyCount(); });
+  updateKeyCount();
   function headers(json) {
     var h = {};
     if (json) h["Content-Type"] = "application/json";
@@ -427,32 +395,8 @@ pre { overflow-x: auto; background: var(--input); border: 1px solid var(--line);
   // ---------- Form ----------
   function refreshWorkflow() {
     var w = $("workflow").value;
-    var kling = false, generate = w === "generate", extend = w === "extend" || w === "extendExisting", cover = w === "cover";
-    $("form").classList.toggle("cover-playground", cover);
-    $("form").querySelector("h2").textContent = cover ? "Upload And Cover Audio" : "Pengaturan lagu";
+    var kling = false, generate = w === "generate", extend = w === "extend" || w === "extendExisting";
     $("sunoFields").hidden = kling; $("klingFields").hidden = !kling;
-    $("promptField").hidden = cover;
-    $("advancedSunoFields").hidden = cover;
-    $("modelHint").hidden = !cover;
-    $("coverVocalOptions").hidden = !cover;
-    $("vocalGender").hidden = cover;
-    $("uploadUrlHint").textContent = cover ? "The URL for uploading audio files, required regardless of whether customMode and instrumental are true or false. Ensure the uploaded audio does not exceed 8 minutes in length." : "URL audio harus bisa diakses publik oleh layanan AI.";
-    var labels = $("form").querySelectorAll("label[for]");
-    labels.forEach(function(label){
-      var id = label.getAttribute("for");
-      var map = {model:"model",uploadUrl:"uploadUrl",title:"title",style:"style",duration:"duration",instrumental:"instrumental",Lyrics:"Lyrics",negativeTags:"negativeTags",vocalGender:"vocalGender"};
-      if (cover && map[id]) label.textContent = map[id];
-      else if (!cover) {
-        var back = {model:"Model",uploadUrl:"Link audio",title:"Judul",style:"Gaya musik",duration:"Durasi",Lyrics:"Lirik",negativeTags:"Gaya yang dihindari",vocalGender:"Suara vokal"};
-        if (back[id]) label.textContent = back[id];
-      }
-    });
-    $("styleHint").textContent = cover ? "Music style, e.g., Jazz, Classical, Electronic." : "Gaya musik, misalnya dangdut koplo, akustik, jazz santai.";
-    $("title").placeholder = cover ? "Enter title..." : "Judul lagu baru";
-    $("style").placeholder = cover ? "Enter your text here..." : "Contoh: dangdut koplo, akustik, jazz santai";
-    $("Lyrics").placeholder = cover ? "Write your own lyrics" : "Tulis lirik, atau kosongkan agar mengikuti lagu sumber.";
-    $("negativeTags").placeholder = cover ? "Music styles to exclude (e.g., heavy metal, strong drums)" : "Contoh: heavy metal, autotune";
-    $("instrumental").parentElement.lastChild.textContent = cover ? " instrumental" : " Instrumental (tanpa vokal)";
     $("sourceAudioField").hidden = generate || w === "extendExisting";
     // Validation is handled after optional local-file upload, so a file picker can satisfy this field.
     $("uploadUrl").required = false;
@@ -478,17 +422,6 @@ pre { overflow-x: auto; background: var(--input); border: 1px solid var(--line);
   });
   $("klingPrompt").addEventListener("input", function () { $("klingPromptCount").textContent = $("klingPrompt").value.length; });
   refreshWorkflow();
-  $("durationNumber").addEventListener("input", function(){
-    var v = Math.max(10, Math.min(360, Number($("durationNumber").value) || 10));
-    $("duration").value = v; $("duration").dispatchEvent(new Event("input", {bubbles:true}));
-  });
-  $("duration").addEventListener("input", function(){ $("durationNumber").value = $("duration").value; });
-  $("uploadUrl").addEventListener("input", function(){
-    var url = $("uploadUrl").value.trim(), preview = $("coverAudioPreview"), player = $("coverAudioPlayer");
-    if (/^https?:\/\//i.test(url)) { if (player.src !== url) player.src = url; preview.hidden = false; }
-    else { player.removeAttribute("src"); player.load(); preview.hidden = true; }
-  });
-  document.querySelectorAll('input[name="coverVocal"]').forEach(function(radio){ radio.addEventListener("change", function(){ $("vocalGender").value = radio.value; }); });
   $("duration").addEventListener("input", function () {
     var n = Number($("duration").value), m = Math.floor(n / 60), r = n % 60;
     $("durationOut").textContent = n + " dtk" + (m ? " (" + m + ":" + (r < 10 ? "0" : "") + r + ")" : "");
@@ -509,7 +442,7 @@ pre { overflow-x: auto; background: var(--input); border: 1px solid var(--line);
 
   var ERR = {
     400: "Parameter tidak valid. Periksa isian form.",
-    401: "Akses layanan gagal. Admin perlu memeriksa API key akun atau sesi login.",
+    401: "Permintaan tidak dapat diproses. Coba lagi nanti.",
     402: "Layanan sedang tidak tersedia. Coba lagi beberapa saat.",
     404: "Sumber tidak ditemukan.",
     422: "Validasi gagal. Periksa link audio dan isian lainnya.",
@@ -615,10 +548,8 @@ pre { overflow-x: auto; background: var(--input); border: 1px solid var(--line);
       if (busy) return; busy = true;
       var sec = Math.round((Date.now() - startedAt) / 1000);
       try {
-        var url = "/api/status?taskId=" + encodeURIComponent(taskId) + "&workflow=" + encodeURIComponent($("workflow").value);
-        var r = await fetch(url, { headers: headers(false) });
+        var r = await fetch("/api/status", { method: "POST", headers: headers(true), body: JSON.stringify({ taskId: taskId, workflow: $("workflow").value, apiKeys: currentKeys() }) });
         var j = await r.json();
-        if (r.status === 401) { await checkLogin(); return fail(401, ""); }
         if (j.code !== 200) return fail(j.code, j.msg);
         var d = j.data;
         if (d.state === "success") return showResult(d);
@@ -636,6 +567,8 @@ pre { overflow-x: auto; background: var(--input); border: 1px solid var(--line);
     clearInterval(timer);
     $("tracks").innerHTML = ""; $("rawBox").hidden = true;
     var workflow = $("workflow").value;
+    var apiKeys = currentKeys();
+    if (!apiKeys.length) { return setState("err", "API key belum diisi", "Masukkan API key atau upload file TXT terlebih dahulu.", true); }
     var isKling = workflow === "kling";
     if (!isKling && ["cover", "extend"].includes(workflow) && !/^https?:\/\//i.test($("uploadUrl").value.trim())) {
       $("go").disabled = false;
@@ -671,7 +604,7 @@ pre { overflow-x: auto; background: var(--input); border: 1px solid var(--line);
       stylePrompt: $("stylePrompt").value.trim(),
       instrumental: $("instrumental").checked,
       negativeTags: $("negativeTags").value.trim(),
-      styleWeight: 0.65, weirdnessConstraint: 0.65, audioWeight: 0.65, variety: "normal"
+      styleWeight: 0.65, weirdnessConstraint: 0.65, audioWeight: 0.65, variety: 1
     };
     if (!isKling && !input.instrumental) { input.Lyrics = $("Lyrics").value.trim(); input.vocalGender = $("vocalGender").value; }
     // Generate Music uses Custom Mode: prompt is interpreted as sung lyrics.
@@ -694,15 +627,14 @@ pre { overflow-x: auto; background: var(--input); border: 1px solid var(--line);
     $("go").disabled = true;
     setState("wait", "Mengirim", "Membuat tugas…");
     try {
-      var r = await fetch("/api/create", { method: "POST", headers: headers(true), body: JSON.stringify({ workflow: workflow, input: input }) });
+      var r = await fetch("/api/create", { method: "POST", headers: headers(true), body: JSON.stringify({ workflow: workflow, input: input, apiKeys: apiKeys }) });
       var j = await r.json();
-      if (r.status === 401) { await checkLogin(); return fail(401, ""); }
       if (j.code !== 200) {
         // Tampilkan pesan yang ramah pengguna; jangan bocorkan nama provider,
         // detail mentah dari server, atau kode HTTP internal ke antarmuka.
         return fail(j.code, "");
       }
-      keyNote = "API key dimuat dari konfigurasi server.";
+      keyNote = "Menggunakan rotasi otomatis API key.";
       poll(j.data.taskId);
     } catch (e) { fail(0, e.message); }
   });
