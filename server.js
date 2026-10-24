@@ -12,7 +12,7 @@ try {
   });
 } catch (e) { /* .env opsional */ }
 
-const { handleCreate, handleStatus, send } = require("./lib/handlers");
+const { handleCreate, handleStatus, handleAuth, send } = require("./lib/handlers");
 const PORT = process.env.PORT || 3000;
 
 http.createServer((req, res) => {
@@ -21,6 +21,7 @@ http.createServer((req, res) => {
     res.writeHead(200, { "Content-Type": "text/html; charset=utf-8" });
     return fs.createReadStream(path.join(__dirname, "public", "index.html")).pipe(res);
   }
+  if (p === "/api/auth") return handleAuth(req, res);
   if (p === "/api/create") return handleCreate(req, res);
   if (p === "/api/status") return handleStatus(req, res);
   send(res, 404, { code: 404, msg: "Tidak ditemukan" });
