@@ -23,14 +23,5 @@ http.createServer((req, res) => {
   }
   if (p === "/api/create") return handleCreate(req, res);
   if (p === "/api/status") return handleStatus(req, res);
-  if (p === "/api/dbimg-upload") {
-    req.query = Object.fromEntries(new URL(req.url, "http://localhost").searchParams.entries());
-    res.status = function (code) { res.statusCode = code; return res; };
-    res.json = function (data) {
-      if (!res.headersSent) res.setHeader("Content-Type", "application/json; charset=utf-8");
-      res.end(JSON.stringify(data));
-    };
-    return require("./api/dbimg-upload")(req, res);
-  }
   send(res, 404, { code: 404, msg: "Tidak ditemukan" });
 }).listen(PORT, () => console.log("Jalan di http://localhost:" + PORT));

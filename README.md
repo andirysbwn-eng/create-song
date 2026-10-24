@@ -1,11 +1,11 @@
-# GenetikaAI Suno — 3 Menu, Tanpa Login User
+# GenetikaAI Suno — 3 Menu
 
-## API key pribadi
-- Jalankan aplikasi, lalu isi kolom **API Key pribadi** di halaman.
-- Key dikirim melalui header `X-API-Key` ke backend untuk setiap request create/status.
-- Key tidak ditanam di HTML, tidak ditulis ke `keys.txt`, dan tidak disimpan oleh aplikasi. Refresh halaman berarti perlu memasukkan ulang key.
-- Endpoint provider saat ini adalah `https://api.emix.ai/api/v1`; hanya API key yang diterbitkan oleh Emix yang berlaku. API key dari provider lain tidak akan diterima. Jika menempelkan `Bearer <key>`, aplikasi otomatis menghapus awalan `Bearer`. Mengganti key tidak otomatis mengganti provider.
-- Jangan membagikan API key atau memakai perangkat publik yang tidak dipercaya.
+## Konfigurasi API key melalui TXT
+- Isi file `keys.txt` di folder utama project dengan API key pada satu baris, lalu simpan.
+- Contoh isi: `API_KEY=isi_key_anda_di_sini` atau cukup tempel key mentah.
+- Server membaca key otomatis; tidak perlu mengetik key di halaman web.
+- `keys.txt` tidak disajikan oleh server lokal dan ditambahkan ke `.gitignore`. Jangan kirim atau unggah file ini ke repositori publik.
+- Untuk hosting/serverless, atur environment variable `API_KEY` pada pengaturan hosting. Jangan mengandalkan `keys.txt` lokal yang tidak ikut ter-deploy.
 
 ## Menu yang tersedia
 1. Generate Music
@@ -14,18 +14,13 @@
 
 ## Jalankan lokal
 - Node.js 18 atau lebih baru.
-- `npm install`
-- `npm start`
-- Buka `http://localhost:3000`
+- Buat/isi `keys.txt` di folder utama.
+- Jalankan `npm start`.
+- Buka `http://localhost:3000`.
 
-Untuk Vercel, deploy project seperti biasa. Tidak perlu file `keys.txt` atau login user.
-
-
-Catatan perbaikan endpoint: dokumentasi resmi Emix Market menetapkan pembuatan task melalui `POST /api/v1/client/tasks` dan pemeriksaan task melalui `GET /api/v1/client/tasks?taskId=...`.
-
-
-## DBImg upload otomatis
-- Atur `DBIMG_API_KEY` di Vercel Project Settings → Environment Variables (atau di `.env` lokal).
-- Kolom DBImg API Key tidak lagi ditampilkan di UI; key tidak disimpan di frontend/ZIP.
-- Pada deployment Vercel, endpoint proxy ini membatasi upload sampai 4 MB karena batas ukuran request serverless. Untuk file lebih besar, diperlukan layanan upload langsung/external storage.
-- Gunakan key DBImg baru jika key sebelumnya pernah dibagikan di chat atau publik.
+## Catatan
+- API key wajib aktif dan memiliki saldo/kredit yang cukup.
+- Panggilan nyata ke layanan AI perlu diuji menggunakan API key milik pengguna.
+- Generate Music memisahkan gaya musik dari lirik; instrumental tidak mengirim parameter vokal yang tidak didukung.
+- Pembuatan task menggunakan `POST /api/v1/client/tasks` dan pemeriksaan task menggunakan `GET /api/v1/client/tasks?taskId=...` pada endpoint layanan yang dikonfigurasi di backend.
+- Pada deployment Vercel, endpoint proxy membatasi upload sampai 4 MB karena batas ukuran request serverless. Untuk file lebih besar, diperlukan layanan upload langsung/external storage.
